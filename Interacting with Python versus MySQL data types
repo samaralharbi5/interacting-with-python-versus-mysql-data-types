@@ -1,0 +1,78 @@
+import mysql.connector
+from mysql.connector import Error
+
+# Database credentials
+DB_CONFIG = {
+    'user': 'root',
+    'password': 'my-secret-pw',
+    'host': 'localhost',
+    'database': 'test_db'
+}
+
+# Helper function to execute SQL commands
+def execute_query(query, params=None):
+    try:
+        connection = mysql.connector.connect(**DB_CONFIG)
+        cursor = connection.cursor()
+        cursor.execute(query, params)
+        connection.commit()
+        print("Query executed successfully")
+    except Error as e:
+        print(f"Error: {e}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+# Create a table with various data types
+def create_table():
+    query = """
+    CREATE TABLE IF NOT EXISTS data_types (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        name VARCHAR(50),
+        age INT,
+        salary DECIMAL(10, 2),
+        birthdate DATE,
+        is_active BOOLEAN,
+        last_login TIMESTAMP
+    )
+    """
+    execute_query(query)
+
+# Insert data into the table
+def insert_data():
+    query = """
+    INSERT INTO data_types (name, age, salary, birthdate, is_active, last_login)
+    VALUES (%s, %s, %s, %s, %s, %s)
+    """
+    data = (
+        'Alice', 30, 75000.50, '1994-05-21', True, '2024-08-10 14:30:00'
+    )
+    execute_query(query, data)
+
+# Retrieve and print data from the table
+def retrieve_data():
+    try:
+        connection = mysql.connector.connect(**DB_CONFIG)
+        cursor = connection.cursor(dictionary=True)
+        cursor.execute("SELECT * FROM data_types")
+        rows = cursor.fetchall()
+        for row in rows:
+            print(row)
+    except Error as e:
+        print(f"Error: {e}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+# Example usage
+if __name__ == "__main__":
+    print("Creating table...")
+    create_table()
+    
+    print("Inserting data...")
+    insert_data()
+    
+    print("Retrieving data...")
+    retrieve_data()
